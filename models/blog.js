@@ -5,5 +5,5 @@ module.exports = mongoose.model('Blog', mongoose.Schema({
     content:{type:String},
     usermail:{type:String},
     createdAt:{type:Date,default:Date.now},
-    ubdatedAt:{type:Date,defaule:Date.now}
+    updatedAt:{type:Date,defaule:Date.now}
 }));

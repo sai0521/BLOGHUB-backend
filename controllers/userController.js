@@ -4,8 +4,10 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req,res)=>{
     const {name,email,password} = req.body;
+    console.log(email)
     try{
-        const user = await User.findOne({email});
+        const user = await User.findOne({usermail:email});
+        
 
         if(user){
             return res.status(400).json({success:false,message:"user already exits"});
@@ -14,8 +16,8 @@ exports.register = async (req,res)=>{
         const salt = await bcrypt.genSalt(10);
         const hashedpassword = await bcrypt.hash(password,salt);
 
-        user = await User.create({name,email,password : hashedpassword});
-        return res.status(200).json({success:true,message:"user created"});
+        const newUser = await User.create({name,usermail:email,password : hashedpassword});
+        return res.status(201).json({success:true,message:"user created"});
 
     }catch(error){
         console.log(error);
@@ -25,15 +27,14 @@ exports.register = async (req,res)=>{
 
 exports.login = async (req,res) =>{
     const {email,password} = req.body;
-
     try{
-        const user = await User.findOne({email});
+        const user = await User.findOne({usermail:email});
         if(!user){
             return res.status(401).json({success:false,message:"Invalid credentials"});
         }
 
         const ismatch = await bcrypt.compare(password,user.password);
-
+       
         if(!ismatch){
             return res.status(401).json({success:false,message:"invalid credentials"});
         }

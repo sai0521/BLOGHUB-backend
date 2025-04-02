@@ -1,10 +1,22 @@
 const Blog = require('../models/blog');
+const mongoose = require('mongoose');
 
 exports.getUserBlogs = async (req, res) => {
-    const { email } = req.body
+    const email = req.user.email // Get from auth middleware
     try {
-        const blogs = await Blog.find({ email }).sort({ createdAt: -1 });
-        return res.status(200).json({ data: blogs });
+        const { page = 1, limit = 10 } = req.query
+        const blogs = await Blog.find({ email })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(Number(limit))
+
+        const total = await Blog.countDocuments({ email })
+
+        return res.status(200).json({
+            success: true,
+            data: blogs,
+            total
+        })
     } catch (error) {
         console.log(error);
         return res.status(500).json({ success: false, message: "error fetching blogs" });
@@ -39,10 +51,10 @@ exports.updateBlog = async (req, res) => {
 
 exports.deleteBlog = async (req, res) => {
     try {
-        const blog = await Blog.findByIdandDelete(req.params.id);
+        const blog = await Blog.findByIdAndDelete(req.params.id);
         res.status(200).json({ success: true, data: {} });
     } catch (error) {
-        console.error(err.message);
+        console.error(error.message);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 }
@@ -55,9 +67,32 @@ exports.getAllBlogs = async (req, res) => {
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(Number(limit));
-        res.status(200).json({success:true,data:blogs});
-    }catch(error){
+        const total = await Blog.countDocuments();
+        res.status(200).json({ success: true, data: blogs, total });
+    } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 }
+
+
+exports.getBlogById = async (req, res) => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ success: false, message: "Invalid blog ID" });
+      }
+  
+      const blog = await Blog.findById(req.params.id);
+      if (!blog) {
+        return res.status(404).json({ success: false, message: "Blog not found" });
+      }
+      
+      res.status(200).json({ success: true, data: blog });
+    } catch (error) {
+      console.error('Error fetching blog:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Server error" 
+      });
+    }
+  };
