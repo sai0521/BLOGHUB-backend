@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken');
 
 exports.register = async (req,res)=>{
     const {name,email,password} = req.body;
@@ -13,7 +14,7 @@ exports.register = async (req,res)=>{
         const salt = await bcrypt.genSalt(10);
         const hashedpassword = await bcrypt.hash(password,salt);
 
-        user = await User.create({name,email,hashedpassword});
+        user = await User.create({name,email,password : hashedpassword});
         return res.status(200).json({success:true,message:"user created"});
 
     }catch(error){
@@ -37,7 +38,9 @@ exports.login = async (req,res) =>{
             return res.status(401).json({success:false,message:"invalid credentials"});
         }
 
-        return res.status(200).json({success:true,message:"login successfull"})
+        const token = jwt.sign({email},process.env.JWT_SECRET,{expiresIn:"1h"});
+
+        return res.status(200).json({success:true,message:"login successfull",token})
 
     }catch(error){
         console.log(error);

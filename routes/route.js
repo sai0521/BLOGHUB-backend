@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const {getUserBlogs ,createBlog,ubdateBlog,deleteblog } = require('../controllers/blogController');
-
+const {getUserBlogs ,createBlog,ubdateBlog,deleteblog, getAllBlogs } = require('../controllers/blogController');
+const {protect} = require('../middlewares/authMiddleware')
 const {register,login} = require('../controllers/userController');
 
 
-router.get('/user/blogs',getUserBlogs);
-router.post('/',createBlog);
-router.put('/:id',ubdateBlog);
-router.delete('/:id',deleteblog);
+router.get('/blogs',getAllBlogs);
+
+router.get('/user/blogs',protect,getUserBlogs);
+router.post('/',protect,createBlog);
+router.put('/:id',protect,updateBlog);
+router.delete('/:id',protect,deleteBlog);
 
 
 router.post('/login',login);
