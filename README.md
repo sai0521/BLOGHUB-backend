@@ -30,7 +30,7 @@ Node.js/Express backend API for a blog platform with MongoDB integration. Handle
 ### Installation
 1. Clone repository:
 ```bash
-git clone https://github.com/yourusername/blog-api-backend.git
+git clone https://github.com/sai0521/blog-api-backend.git
 cd blog-api-backend
 ```
 
@@ -84,11 +84,11 @@ npm run build
 
 2. Start in production:
 ```bash
-node dist/index.js
+node dist/server.js
 ```
 
 3. Recommended:
-- Use PM2 process manager: `pm2 start dist/index.js`
+- Use PM2 process manager: `pm2 start dist/server.js`
 - Host on AWS EC2, DigitalOcean, or Heroku
 - Use MongoDB Atlas for cloud database
 
@@ -111,6 +111,5 @@ npm test
 
 ## 📜 License
 MIT License - See LICENSE file for details
-```
 
 
