@@ -14,8 +14,8 @@ router.get('/auth/verify',protect,(req,res)=>{
 
 router.get('/user/blogs',protect,getUserBlogs);
 router.post('/blogs',protect,createBlog);
-router.put('/:id',protect,updateBlog);
-router.delete('/:id',protect,deleteBlog);
+router.put('/blogs/:id',protect,updateBlog);
+router.delete('/blogs/:id',protect,deleteBlog);
 router.get('/blogs/:id',getBlogById)
 
 router.post('/login',login);

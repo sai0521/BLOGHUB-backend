@@ -2,65 +2,99 @@ const Blog = require('../models/blog');
 const mongoose = require('mongoose');
 
 exports.getUserBlogs = async (req, res) => {
-    const email = req.user.email // Get from auth middleware
     try {
-        const { page = 1, limit = 10 } = req.query
-        const blogs = await Blog.find({ email })
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(Number(limit))
-
-        const total = await Blog.countDocuments({ email })
-
-        return res.status(200).json({
-            success: true,
-            data: blogs,
-            total
-        })
+      if (!req.user?.email) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+      }
+  
+      const blogs = await Blog.find({ email: req.user.email })
+        .sort({ createdAt: -1 });
+  
+      res.status(200).json({ success: true, data: blogs });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ success: false, message: "error fetching blogs" });
+      console.error('GetUserBlogs Error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blogs",
+        error: error.message 
+      });
     }
-}
+  };
 
+// blogController.js
 exports.createBlog = async (req, res) => {
     try {
-        const blog = await Blog.create(req.body);
-        res.status(201).json({ success: true, data: blog })
+      const { title, content } = req.body;
+      
+      if (!req.user?.email) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+      }
+  
+      const blog = await Blog.create({
+        title,
+        content,
+        email: req.user.email
+      });
+  
+      res.status(201).json({ success: true, data: blog });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Server error' });
+      console.error('Create Blog Error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || 'Server error' 
+      });
     }
-}
+  };
 
+// In blogController.js (updateBlog)
 exports.updateBlog = async (req, res) => {
     try {
-        const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
-
-        res.status(200).json({ success: true, data: blog });
-
+      const blog = await Blog.findById(req.params.id)
+      
+      if (!blog) {
+        return res.status(404).json({ success: false, message: "Blog not found" })
+      }
+      
+      if (blog.email !== req.user.email) {
+        return res.status(403).json({ success: false, message: "Unauthorized" })
+      }
+  
+      const updatedBlog = await Blog.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+      )
+  
+      res.status(200).json({ success: true, data: updatedBlog })
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+      console.error('Update Error:', err)
+      res.status(500).json({ success: false, message: 'Server error' })
     }
+  }
 
-}
-
-exports.deleteBlog = async (req, res) => {
+  exports.deleteBlog = async (req, res) => {
     try {
-        const blog = await Blog.findByIdAndDelete(req.params.id);
-        res.status(200).json({ success: true, data: {} });
+      const blog = await Blog.findById(req.params.id);
+      
+      if (!blog) {
+        return res.status(404).json({ success: false, message: "Blog not found" });
+      }
+      
+      if (blog.email !== req.user.email) {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+      }
+  
+      await Blog.findByIdAndDelete(req.params.id);
+      res.status(200).json({ success: true, message: "Blog deleted" });
+      
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ success: false, message: 'Server error' });
+      console.error('Delete Error:', error);
+      res.status(500).json({ success: false, message: "Server error" });
     }
-}
+  };
 
 exports.getAllBlogs = async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 9 } = req.query;
 
     try {
         const blogs = await Blog.find()
