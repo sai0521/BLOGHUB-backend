@@ -2,24 +2,34 @@ const Blog = require('../models/blog');
 const mongoose = require('mongoose');
 
 exports.getUserBlogs = async (req, res) => {
-    try {
-      if (!req.user?.email) {
-        return res.status(401).json({ success: false, message: "Unauthorized" });
-      }
-  
-      const blogs = await Blog.find({ email: req.user.email })
-        .sort({ createdAt: -1 });
-  
-      res.status(200).json({ success: true, data: blogs });
-    } catch (error) {
-      console.error('GetUserBlogs Error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Error fetching blogs",
-        error: error.message 
-      });
+  try {
+    if (!req.user?.email) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-  };
+    
+    const { page = 1, limit = 9 } = req.query;
+    
+    const blogs = await Blog.find({ email: req.user.email })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * Number(limit))
+      .limit(Number(limit));
+    
+    const total = await Blog.countDocuments({ email: req.user.email });
+    
+    res.status(200).json({ 
+      success: true, 
+      data: blogs,
+      total
+    });
+  } catch (error) {
+    console.error('GetUserBlogs Error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching blogs",
+      error: error.message
+    });
+  }
+};
 
 // blogController.js
 exports.createBlog = async (req, res) => {
