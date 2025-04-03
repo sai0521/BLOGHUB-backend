@@ -1,6 +1,4 @@
-Here's the complete backend README.md content in a single code block for easy copying:
 
-`
 # Blog Application Backend
 
 ## 📖 Overview
@@ -115,4 +113,4 @@ npm test
 MIT License - See LICENSE file for details
 ```
 
-Just copy this entire content and save as `README.md` in your backend directory. Modify the placeholder values (URLs, credentials) as needed for your specific setup.
+
